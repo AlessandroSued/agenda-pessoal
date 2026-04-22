@@ -1,718 +1,462 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modelo A3 — Gestão de Projetos</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<title>Agenda de Compromissos</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;min-height:100vh;transition:background .25s;background:#e8d5b0}
+body.dark{background:#1a0f00}
+:root{
+  --bg:#fff8ee;--bg2:#f5e8cc;--bg3:#eeddb0;
+  --text:#3a1f00;--text2:#6b3d0a;--text3:#8C5B30;
+  --border:#d9ad77;--border2:#8C5B30;
+  --accent:#F28B0C;--accent2:#c47008;
+  --today-bg:#F28B0C;--today-text:#fff;
+  --sel-bg:#fff3dc;--sel-border:#F28B0C;
+  --modal-bg:#fff8ee;--overlay:rgba(58,31,0,0.45);
+  --inp:#fff8ee;--inp-b:#d9ad77;
+  --btn:#f5e8cc;--btn-h:#eeddb0;
+  --ev-work:#F28B0C;--ev-personal:#8C5B30;--ev-health:#732002;--ev-other:#D9AD77;
+  --tw-bg:#fff3dc;--tw-t:#c47008;
+  --tp-bg:#f5e8cc;--tp-t:#6b3d0a;
+  --th-bg:#fde8e0;--th-t:#732002;
+  --to-bg:#f0e4cc;--to-t:#8C5B30;
+  --up-hd:#F2790F;
+  --toast-bg:#3a1f00;--toast-t:#fff8ee;
+}
+body.dark{
+  --bg:#2a1500;--bg2:#1e0e00;--bg3:#3a1f00;
+  --text:#f5ddb0;--text2:#d9ad77;--text3:#8C5B30;
+  --border:#4a2800;--border2:#732002;
+  --accent:#F28B0C;--accent2:#e07a00;
+  --today-bg:#F28B0C;--today-text:#1a0800;
+  --sel-bg:#3a2000;--sel-border:#F28B0C;
+  --modal-bg:#2a1500;--overlay:rgba(0,0,0,0.65);
+  --inp:#1e0e00;--inp-b:#4a2800;
+  --btn:#3a1f00;--btn-h:#4a2800;
+  --ev-work:#F28B0C;--ev-personal:#D9AD77;--ev-health:#F2790F;--ev-other:#8C5B30;
+  --tw-bg:#3a2000;--tw-t:#F28B0C;
+  --tp-bg:#2e1a00;--tp-t:#D9AD77;
+  --th-bg:#2e1000;--th-t:#F2790F;
+  --to-bg:#2a1500;--to-t:#8C5B30;
+  --up-hd:#F28B0C;
+  --toast-bg:#f5ddb0;--toast-t:#3a1f00;
+}
 
-  /* ══════════════════════════════════════
-     THEME VARIABLES
-  ══════════════════════════════════════ */
-  :root, [data-theme="light"] {
-    --page-bg:       #f5ede0;
-    --toolbar-bg:    #2e1a16;
-    --toolbar-text:  #f2dfc0;
-    --toolbar-muted: #cfb28c;
-    --board-bg:      #fdf8f2;
-    --board-border:  #cfb28c;
-    --row-border:    #e8cb9f;
-    --cell-border:   #f2dfc0;
-    --text:          #2e1a16;
-    --text-muted:    #8d705a;
-    --btn-ghost-bg:  transparent;
-    --btn-ghost-cl:  #cfb28c;
-    --btn-ghost-br:  #7a5244;
-    --btn-ghost-hbg: #3d2018;
-    --btn-ghost-hcl: #f2dfc0;
-    --btn-ghost-hbr: #b8864e;
-    --toast-bg:      #2e1a16;
-    --toast-cl:      #f2dfc0;
-    --modal-bg:      #fdf8f2;
-    --modal-input-bg:#f5ede0;
-    --modal-border:  #cfb28c;
-    --toggle-bg:     #7a5244;
-    --toggle-knob:   #f2dfc0;
-    --empty-cell:    #fdf6ee;
-  }
+#app{max-width:820px;margin:0 auto;padding:1.25rem 1rem}
 
-  /* cells without f-xxx class fall back cleanly */
-  [data-theme="dark"] .cell:not([class*="f-"]) { background: var(--board-bg); }
-  [data-theme="light"] .cell:not([class*="f-"]) { background: var(--board-bg); }
+/* ── topbar ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px;flex-wrap:wrap}
+.nav-g{display:flex;align-items:center;gap:8px}
+.nb{background:var(--btn);border:0.5px solid var(--border);border-radius:8px;padding:5px 13px;cursor:pointer;color:var(--text);font-size:15px;transition:background .15s}
+.nb:hover{background:var(--btn-h)}
+.ml{font-size:18px;font-weight:500;color:var(--text);min-width:165px;text-align:center}
+.rb{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.thw{display:flex;align-items:center;gap:6px}
+.thl{font-size:12px;color:var(--text3)}
+.tg{width:42px;height:23px;background:var(--btn);border:0.5px solid var(--border);border-radius:12px;cursor:pointer;position:relative;transition:background .2s}
+.tk{width:17px;height:17px;background:var(--accent);border-radius:50%;position:absolute;top:3px;left:3px;transition:left .2s}
+.dark .tk{left:22px}
 
-  [data-theme="dark"] {
-    --page-bg:       #1a0e0a;
-    --toolbar-bg:    #0e0704;
-    --toolbar-text:  #e8cb9f;
-    --toolbar-muted: #7a5244;
-    --board-bg:      #221410;
-    --board-border:  #5a3d34;
-    --row-border:    #3a2018;
-    --cell-border:   #2e1a14;
-    --text:          #e8cb9f;
-    --text-muted:    #8d705a;
-    --btn-ghost-bg:  transparent;
-    --btn-ghost-cl:  #8d705a;
-    --btn-ghost-br:  #5a3d34;
-    --btn-ghost-hbg: #2e1a14;
-    --btn-ghost-hcl: #e8cb9f;
-    --btn-ghost-hbr: #8d705a;
-    --toast-bg:      #e8cb9f;
-    --toast-cl:      #2e1a16;
-    --modal-bg:      #2a1810;
-    --modal-input-bg:#1a0e0a;
-    --modal-border:  #5a3d34;
-    --toggle-bg:     #e8cb9f;
-    --toggle-knob:   #2e1a16;
-    --empty-cell:    #1e1008;
-  }
+/* ── action bar ── */
+.abar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:1.1rem;padding:10px 12px;background:var(--bg);border:0.5px solid var(--border);border-radius:10px}
+.abar-lbl{font-size:12px;color:var(--text3);margin-right:4px;white-space:nowrap}
+.abtn{display:flex;align-items:center;gap:5px;background:var(--btn);border:0.5px solid var(--border);border-radius:7px;padding:6px 13px;cursor:pointer;color:var(--text2);font-size:13px;font-family:inherit;transition:background .15s;white-space:nowrap}
+.abtn:hover{background:var(--btn-h)}
+.abtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.abtn.primary:hover{background:var(--accent2)}
+.abtn svg{width:14px;height:14px;flex-shrink:0}
 
-  /* ══════════════════════════════════════
-     PER-FIELD COLORS — LIGHT
-  ══════════════════════════════════════ */
-  /* LIGHT MODE — Coffee-inspired per-field palette */
-  /* Each field: label bg (--lc), label text (--lt), input bg (--ic) */
-  /* All tones derived from espresso → cream spectrum */
-  [data-theme="light"] .f-projeto      { --lc:#e8d5b8; --lt:#2e1a16; --ic:#f5ecd8; }
-  [data-theme="light"] .f-gp           { --lc:#dfc9a8; --lt:#4d302a; --ic:#f0e4cc; }
-  [data-theme="light"] .f-aprovacoes   { --lc:#f0dfc5; --lt:#3d2018; --ic:#faf3e8; }
-  [data-theme="light"] .f-sit-atual    { --lc:#d4a574; --lt:#2e1a16; --ic:#ecddb8; }
-  [data-theme="light"] .f-metas        { --lc:#c9934a; --lt:#2e1a16; --ic:#e8d4a8; }
-  [data-theme="light"] .f-sit-futura   { --lc:#b8864e; --lt:#fdf6ee; --ic:#e4cca0; }
-  [data-theme="light"] .f-riscos       { --lc:#7a5244; --lt:#fdf6ee; --ic:#c9a888; }
-  [data-theme="light"] .f-produtos     { --lc:#8d705a; --lt:#fdf6ee; --ic:#d4b894; }
-  [data-theme="light"] .f-premissas    { --lc:#cfb28c; --lt:#2e1a16; --ic:#e8d4b4; }
-  [data-theme="light"] .f-entregas     { --lc:#e8cb9f; --lt:#2e1a16; --ic:#f5e8ce; }
-  [data-theme="light"] .f-responsaveis { --lc:#f2dfc0; --lt:#4d302a; --ic:#faf3e4; }
-  [data-theme="light"] .f-plano        { --lc:#a0623a; --lt:#fdf6ee; --ic:#d4a07a; }
-  [data-theme="light"] .f-restricoes   { --lc:#5a3d34; --lt:#fdf6ee; --ic:#b09080; }
-  [data-theme="light"] .f-exclusoes    { --lc:#4d302a; --lt:#f2dfc0; --ic:#a07868; }
-  [data-theme="light"] .f-metricas     { --lc:#d4b894; --lt:#2e1a16; --ic:#ecdcbc; }
-  [data-theme="light"] .f-custo        { --lc:#c9934a; --lt:#2e1a16; --ic:#e8d09c; }
-  [data-theme="light"] .f-acomp        { --lc:#b8864e; --lt:#fdf6ee; --ic:#d8b888; }
-  [data-theme="light"] .f-stakeholders { --lc:#2e1a16; --lt:#f2dfc0; --ic:#8d6050; }
+/* ── calendar ── */
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1.5rem}
+.ch{text-align:center;font-size:11px;color:var(--text3);padding:5px 0;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.cc{min-height:84px;border:0.5px solid var(--border);border-radius:9px;padding:5px;cursor:pointer;background:var(--bg);transition:background .15s,border .15s}
+.cc:hover{background:var(--bg2)}
+.cc.om{opacity:.25;pointer-events:none}
+.cc.it{border:1.5px solid var(--accent)}
+.cc.it .dn{background:var(--today-bg);color:var(--today-text);border-radius:50%}
+.cc.sl{background:var(--sel-bg);border:1.5px solid var(--sel-border)}
+.dn{font-size:12px;font-weight:500;color:var(--text);width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin-bottom:3px}
+.ces{display:flex;flex-direction:column;gap:2px}
+.ce{font-size:10px;font-weight:500;border-radius:4px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6}
+.ce.work{background:var(--tw-bg);color:var(--tw-t)}
+.ce.personal{background:var(--tp-bg);color:var(--tp-t)}
+.ce.health{background:var(--th-bg);color:var(--th-t)}
+.ce.other{background:var(--to-bg);color:var(--to-t)}
+.cm{font-size:10px;color:var(--text3);padding-left:3px}
 
-  /* ══════════════════════════════════════
-     PER-FIELD COLORS — DARK (muted, rich)
-  ══════════════════════════════════════ */
-  /* DARK MODE — Deep coffee tones */
-  [data-theme="dark"] .f-projeto      { --lc:#2e1a10; --lt:#e8cb9f; --ic:#261408; }
-  [data-theme="dark"] .f-gp           { --lc:#351e12; --lt:#f2dfc0; --ic:#2a1808; }
-  [data-theme="dark"] .f-aprovacoes   { --lc:#3a2010; --lt:#cfb28c; --ic:#2e180a; }
-  [data-theme="dark"] .f-sit-atual    { --lc:#4d2c14; --lt:#e8cb9f; --ic:#3c2010; }
-  [data-theme="dark"] .f-metas        { --lc:#5a3418; --lt:#f2dfc0; --ic:#46280e; }
-  [data-theme="dark"] .f-sit-futura   { --lc:#4a2c18; --lt:#e8d4b4; --ic:#3a2010; }
-  [data-theme="dark"] .f-riscos       { --lc:#3d1c10; --lt:#f0c898; --ic:#2e1408; }
-  [data-theme="dark"] .f-produtos     { --lc:#442010; --lt:#e8c890; --ic:#341808; }
-  [data-theme="dark"] .f-premissas    { --lc:#3a2414; --lt:#dfc898; --ic:#2c1a0c; }
-  [data-theme="dark"] .f-entregas     { --lc:#4a2c18; --lt:#e8cb9f; --ic:#38200e; }
-  [data-theme="dark"] .f-responsaveis { --lc:#3e2010; --lt:#f2dfc0; --ic:#301808; }
-  [data-theme="dark"] .f-plano        { --lc:#4d2818; --lt:#e8c8a0; --ic:#3a1e10; }
-  [data-theme="dark"] .f-restricoes   { --lc:#2a1a10; --lt:#cfb28c; --ic:#1e1008; }
-  [data-theme="dark"] .f-exclusoes    { --lc:#221408; --lt:#c9a878; --ic:#1a0e05; }
-  [data-theme="dark"] .f-metricas     { --lc:#3d2818; --lt:#e8d0a8; --ic:#2e1e10; }
-  [data-theme="dark"] .f-custo        { --lc:#4a2c14; --lt:#f2d890; --ic:#381e0c; }
-  [data-theme="dark"] .f-acomp        { --lc:#3a2010; --lt:#e8c898; --ic:#2c1808; }
-  [data-theme="dark"] .f-stakeholders { --lc:#1e0e08; --lt:#cfb28c; --ic:#160a04; }
+/* ── upcoming ── */
+.up-blk{margin-bottom:1.1rem}
+.up-hdr{display:flex;align-items:baseline;gap:8px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.up-dn{font-size:14px;font-weight:500;color:var(--up-hd)}
+.up-ds{font-size:12px;color:var(--text3)}
+.up-badge{font-size:11px;background:var(--accent);color:#fff;border-radius:4px;padding:1px 8px;font-weight:500;margin-left:2px}
+.ecard{display:flex;align-items:stretch;border:0.5px solid var(--border);border-radius:9px;margin-bottom:6px;overflow:hidden;background:var(--bg)}
+.estr{width:4px;flex-shrink:0}
+.estr.work{background:var(--ev-work)}.estr.personal{background:var(--ev-personal)}.estr.health{background:var(--ev-health)}.estr.other{background:var(--ev-other)}
+.ebody{flex:1;padding:8px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.etitle{font-size:14px;font-weight:500;color:var(--text)}
+.emeta{font-size:12px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.etag{font-size:10px;border-radius:4px;padding:1px 6px;font-weight:500}
+.etag.work{background:var(--tw-bg);color:var(--tw-t)}.etag.personal{background:var(--tp-bg);color:var(--tp-t)}.etag.health{background:var(--th-bg);color:var(--th-t)}.etag.other{background:var(--to-bg);color:var(--to-t)}
+.enotes{font-size:12px;color:var(--text3);margin-top:3px}
+.eactions{display:flex;align-items:flex-start;gap:2px;flex-shrink:0}
+.edel,.eedit{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:3px 5px;line-height:1;align-self:flex-start;border-radius:5px;transition:background .15s,color .15s}
+.eedit:hover{color:var(--accent);background:var(--bg2)}
+.edel:hover{color:#732002;background:var(--bg2)}
+.noev{font-size:12px;color:var(--text3);padding:3px 0 8px}
 
-  /* ══════════════════════════════════════
-     BASE STYLES
-  ══════════════════════════════════════ */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── modal ── */
+.modal-wrap{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:200}
+.mbox{background:var(--modal-bg);border-radius:13px;border:0.5px solid var(--border2);padding:1.5rem;width:330px;max-width:95vw}
+.mbox h3{font-size:16px;font-weight:500;color:var(--text);margin-bottom:1rem}
+.fr{margin-bottom:11px}
+.fr label{display:block;font-size:12px;color:var(--text2);margin-bottom:3px}
+.fr input,.fr select,.fr textarea{width:100%;background:var(--inp);border:0.5px solid var(--inp-b);border-radius:7px;padding:7px 10px;font-size:14px;color:var(--text);outline:none;font-family:inherit;transition:border .15s}
+.fr input:focus,.fr textarea:focus{border-color:var(--accent)}
+.fr textarea{height:62px;resize:vertical}
+.r2{display:flex;gap:8px}.r2>div{flex:1}
+.macts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.bcan{background:var(--btn);border:0.5px solid var(--border);border-radius:8px;padding:7px 15px;cursor:pointer;color:var(--text2);font-size:13px;font-family:inherit}
+.bcan:hover{background:var(--btn-h)}
+.bsav{background:var(--accent);border:none;border-radius:8px;padding:7px 15px;cursor:pointer;color:#fff;font-size:13px;font-weight:500;font-family:inherit}
+.bsav:hover{background:var(--accent2)}
 
-  body {
-    font-family: 'Outfit', sans-serif;
-    background: var(--page-bg);
-    color: var(--text);
-    min-height: 100vh;
-    transition: background 0.3s, color 0.3s;
-  }
-
-  /* ── TOOLBAR ── */
-  .toolbar {
-    background: var(--toolbar-bg);
-    padding: 0 32px;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 54px; position: sticky; top: 0; z-index: 100;
-    transition: background 0.3s;
-  }
-  .toolbar-brand { font-size: 14px; font-weight: 500; color: var(--toolbar-text); letter-spacing: 0.5px; }
-  .toolbar-brand span { color: var(--toolbar-muted); font-weight: 300; margin-left: 8px; }
-  .toolbar-actions { display: flex; gap: 8px; align-items: center; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500;
-    padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s;
-  }
-  .btn-ghost {
-    background: var(--btn-ghost-bg); color: var(--btn-ghost-cl);
-    border: 1px solid var(--btn-ghost-br);
-  }
-  .btn-ghost:hover { background: var(--btn-ghost-hbg); color: var(--btn-ghost-hcl); border-color: var(--btn-ghost-hbr); }
-  .btn-clear { background: transparent; color: var(--btn-ghost-cl); border: 1px solid var(--btn-ghost-br); }
-  .btn-clear:hover { background: var(--btn-ghost-hbg); color: #e88; }
-  .btn-primary { background: var(--toolbar-text); color: var(--toolbar-bg); font-weight: 600; }
-  .btn-primary:hover { opacity: 0.88; }
-
-  /* ── TOGGLE DAY/NIGHT ── */
-  .toggle-wrap {
-    display: flex; align-items: center; gap: 7px; cursor: pointer;
-    user-select: none; margin-left: 6px;
-  }
-  .toggle-icon { font-size: 14px; line-height: 1; }
-  .toggle-track {
-    width: 36px; height: 20px; border-radius: 20px;
-    background: var(--toggle-bg);
-    position: relative; transition: background 0.3s;
-    flex-shrink: 0;
-  }
-  .toggle-knob {
-    width: 14px; height: 14px; border-radius: 50%;
-    background: var(--toggle-knob);
-    position: absolute; top: 3px; left: 3px;
-    transition: transform 0.25s, background 0.3s;
-  }
-  [data-theme="dark"] .toggle-knob { transform: translateX(16px); }
-
-  /* ── MAIN ── */
-  .main { padding: 24px 32px 60px; max-width: 1400px; margin: 0 auto; }
-  .page-header { text-align: center; margin-bottom: 20px; }
-  .page-header h1 { font-size: 11px; font-weight: 500; letter-spacing: 5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
-  .page-header p { font-size: 11px; color: var(--text-muted); opacity: 0.7; }
-
-  /* ── A3 BOARD ── */
-  .a3 {
-    display: flex; flex-direction: row;
-    border: 1.5px solid var(--board-border);
-    background: var(--board-bg);
-    border-radius: 6px;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-    min-height: 600px; overflow: hidden;
-    transition: background 0.3s, border-color 0.3s;
-  }
-
-  .col-left  { width: 50%; border-right: 1.5px solid var(--board-border); display: flex; flex-direction: column; }
-  .col-right { width: 50%; display: flex; flex-direction: column; }
-
-  .section      { display: flex; flex-direction: row; border-bottom: 1px solid var(--row-border); flex-shrink: 0; }
-  .section:last-child { border-bottom: none; }
-  .section-grow { display: flex; flex-direction: row; flex: 1; border-bottom: 1px solid var(--row-border); }
-  .section-grow:last-child { border-bottom: none; }
-
-  .cell { display: flex; flex-direction: column; flex: 1; border-right: 1px solid var(--cell-border); min-width: 0; background: var(--ic, var(--board-bg)); }
-  .cell:last-child { border-right: none; }
-
-  .cell-label {
-    font-size: 9px; font-weight: 600;
-    color: var(--lt, var(--text-muted));
-    background: var(--lc, var(--board-bg));
-    padding: 5px 9px 4px; letter-spacing: 0.6px;
-    text-transform: uppercase; user-select: none;
-    flex-shrink: 0; line-height: 1.3;
-    border-bottom: 1px solid rgba(128,128,128,0.08);
-    transition: background 0.3s, color 0.3s;
-  }
-  .cell-label.italic { font-style: italic; text-transform: none; font-size: 9.5px; }
-
-  .cell-input {
-    flex: 1; width: 100%; border: none; outline: none; resize: none;
-    font-family: 'Outfit', sans-serif; font-size: 11.5px;
-    color: var(--lt, var(--text));
-    background: var(--ic, inherit);
-    padding: 6px 9px 8px; line-height: 1.6; min-height: 24px;
-    caret-color: var(--lt, var(--text));
-    transition: background 0.3s, color 0.3s;
-    overflow: hidden;
-    box-sizing: border-box;
-  }
-  /* Proxy div used during PDF export — mirrors textarea appearance */
-  .cell-input-proxy {
-    flex: 1; width: 100%; border: none; outline: none;
-    font-family: 'Outfit', sans-serif; font-size: 11.5px;
-    color: var(--lt, var(--text));
-    background: var(--ic, inherit);
-    padding: 6px 9px 8px; line-height: 1.6; min-height: 24px;
-    white-space: pre-wrap; word-break: break-word;
-    box-sizing: border-box;
-  }
-  .cell-input:focus {
-    background: var(--lc);
-    box-shadow: inset 0 0 0 1.5px var(--lt);
-  }
-  .cell-input::placeholder { color: color-mix(in srgb, var(--lt, #aaa) 25%, transparent); font-style: italic; }
-
-  .h-xs { min-height: 36px; }
-  .h-sm { min-height: 82px; }
-  .h-md { min-height: 120px; }
-
-  .arrow { align-self: flex-end; padding: 4px 8px 6px; font-size: 17px; color: var(--text-muted); user-select: none; flex-shrink: 0; }
-
-  .sub-stack { display: flex; flex-direction: column; flex: 1; }
-  .sub-row { display: flex; flex: 1; border-bottom: 1px solid var(--cell-border); }
-  .sub-row:last-child { border-bottom: none; }
-
-  .empty-cell { background: var(--empty-cell); transition: background 0.3s; }
-
-  /* ── MODAL ── */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--modal-bg); border: 1px solid var(--board-border); border-radius: 12px; padding: 28px 32px; width: 480px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); transition: background 0.3s; }
-  .modal h2 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
-  .modal textarea { width: 100%; height: 200px; font-family: 'DM Mono', monospace; font-size: 11px; border: 1px solid var(--modal-border); border-radius: 6px; padding: 10px; resize: vertical; color: var(--text); background: var(--modal-input-bg); outline: none; transition: background 0.3s, color 0.3s; }
-  .modal textarea:focus { border-color: var(--text-muted); }
-  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-  .btn-cancel { background: var(--modal-input-bg); color: var(--text-muted); border: 1px solid var(--modal-border); }
-  .btn-cancel:hover { opacity: 0.8; }
-  .btn-ok { background: var(--text); color: var(--page-bg); font-weight: 600; }
-  .btn-ok:hover { opacity: 0.85; }
-
-  /* ── TOAST ── */
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--toast-bg); color: var(--toast-cl); font-size: 12px; padding: 10px 22px; border-radius: 30px; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 300; pointer-events: none; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--board-border); border-radius: 4px; }
-
-  /* ── MBA TOP ROW — spans full width ── */
-  .mba-row {
-    display: flex;
-    flex-direction: row;
-    border-bottom: 2px solid var(--board-border);
-    flex-shrink: 0;
-    width: 100%;
-  }
-  .mba-row .cell { flex: 1; border-right: 1px solid var(--row-border); }
-  .mba-row .cell:last-child { border-right: none; }
-
-  /* mba colors — warm academia tones */
-  [data-theme="light"] .f-grupo    { --lc:#4d302a; --lt:#f2dfc0; --ic:#7a5244; }
-  [data-theme="light"] .f-materia  { --lc:#7a5244; --lt:#fdf6ee; --ic:#a07060; }
-  [data-theme="light"] .f-professor{ --lc:#2e1a16; --lt:#f2dfc0; --ic:#5a3d34; }
-  [data-theme="dark"]  .f-grupo    { --lc:#1a0e08; --lt:#e8cb9f; --ic:#140a04; }
-  [data-theme="dark"]  .f-materia  { --lc:#221408; --lt:#f2dfc0; --ic:#1a0e06; }
-  [data-theme="dark"]  .f-professor{ --lc:#0e0704; --lt:#cfb28c; --ic:#0a0502; }
-
-  /* ── FOOTER ── */
-  .footer {
-    text-align: center;
-    padding: 18px 0 10px;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 32px;
-  }
-  .footer span { opacity: 0.75; }
-  .footer .sep { opacity: 0.3; }
-
-  @media print { .toolbar { display: none; } .main { padding: 0; } .a3 { box-shadow: none; } .footer { padding: 6px 0 2px; } }
+/* ── toast ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--toast-bg);color:var(--toast-t);font-size:13px;padding:9px 20px;border-radius:8px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:300;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
+<div id="app">
 
-<div class="toolbar">
-  <div class="toolbar-brand">A3 <span>MBA — Gestão de Projetos</span></div>
-  <div class="toolbar-actions">
-    <button class="btn btn-clear"   onclick="clearAll()">✕ Limpar</button>
-    <button class="btn btn-ghost"   onclick="importTXT()">↑ Importar TXT</button>
-    <button class="btn btn-ghost"   onclick="exportTXT()">↓ Exportar TXT</button>
-    <div style="position:relative; display:inline-flex;">
-      <button class="btn btn-primary" onclick="exportPDF('a3')" style="border-radius:6px 0 0 6px; border-right:1px solid rgba(0,0,0,0.15);">⬇ PDF A3</button>
-      <button class="btn btn-primary" onclick="exportPDF('a4')" style="border-radius:0 6px 6px 0;">⬇ PDF A4</button>
+  <!-- topbar: navegação + tema -->
+  <div class="topbar">
+    <div class="nav-g">
+      <button class="nb" id="prev">&#8592;</button>
+      <span class="ml" id="mlbl"></span>
+      <button class="nb" id="next">&#8594;</button>
     </div>
+    <div class="rb">
+      <div class="thw">
+        <span class="thl" id="tlbl">Dia</span>
+        <div class="tg" id="tog"><div class="tk"></div></div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Toggle dia/noite -->
-    <div class="toggle-wrap" onclick="toggleTheme()" title="Alternar modo claro/escuro">
-      <span class="toggle-icon" id="toggle-icon">🌙</span>
-      <div class="toggle-track"><div class="toggle-knob"></div></div>
-    </div>
+  <!-- barra de ações -->
+  <div class="abar">
+    <span class="abar-lbl">Ações:</span>
+    <span id="file-id" style="font-size:11px;color:var(--text3);background:var(--bg2);border:0.5px solid var(--border);border-radius:5px;padding:3px 8px;margin-right:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button class="abtn primary" id="btn-new">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+      Novo compromisso
+    </button>
+    <button class="abtn" id="btn-save-ls">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><rect x="5" y="2" width="6" height="4" rx="1"/><rect x="4" y="8" width="8" height="5" rx="1"/></svg>
+      Salvar
+    </button>
+    <button class="abtn" id="btn-export">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V3M5 7l3 3 3-3"/><path d="M3 12h10"/></svg>
+      Exportar .txt
+    </button>
+    <button class="abtn" id="btn-import-trigger">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 6v7M5 9l3-3 3 3"/><path d="M3 12h10"/></svg>
+      Importar .txt
+    </button>
+    <input type="file" id="file-input" accept=".txt" style="display:none">
+  </div>
+
+  <div class="cg" id="cal"></div>
+  <div id="upcoming"></div>
+</div>
+
+<!-- modal novo/editar compromisso -->
+<div class="modal-wrap" id="modal" style="display:none">
+  <div class="mbox">
+    <h3 id="modal-title">Novo compromisso</h3>
+    <input type="hidden" id="f-id">
+    <div class="fr"><label>Título</label><input type="text" id="f-title" placeholder="Ex: Reunião com cliente"></div>
+    <div class="fr"><label>Data</label><input type="date" id="f-date"></div>
+    <div class="fr"><div class="r2"><div><label>Início</label><input type="time" id="f-start"></div><div><label>Fim</label><input type="time" id="f-end"></div></div></div>
+    <div class="fr"><label>Categoria</label><select id="f-cat"><option value="work">Trabalho</option><option value="personal">Pessoal</option><option value="health">Saúde</option><option value="other">Outro</option></select></div>
+    <div class="fr"><label>Observações</label><textarea id="f-notes" placeholder="Detalhes adicionais..."></textarea></div>
+    <div class="macts"><button class="bcan" id="btn-cancel">Cancelar</button><button class="bsav" id="btn-save">Salvar</button></div>
   </div>
 </div>
 
-<div class="main">
-  <div class="page-header">
-    <h1>Modelo A3 — MBA</h1>
-    <p>Clique em qualquer campo para preencher. Use Tab para avançar entre células.</p>
-  </div>
-
-  <div class="a3" id="a3-board" style="flex-direction: column;">
-
-    <!-- ══════════ LINHA MBA (topo) ══════════ -->
-    <div class="mba-row h-xs">
-      <div class="cell f-grupo">
-        <div class="cell-label">Grupo</div>
-        <textarea class="cell-input" id="grupo" placeholder="Nome do grupo…" rows="1"></textarea>
-      </div>
-      <div class="cell f-materia">
-        <div class="cell-label">Matéria</div>
-        <textarea class="cell-input" id="materia" placeholder="Disciplina…" rows="1"></textarea>
-      </div>
-      <div class="cell f-professor">
-        <div class="cell-label">Professor</div>
-        <textarea class="cell-input" id="professor" placeholder="Nome do professor…" rows="1"></textarea>
-      </div>
-    </div>
-
-    <!-- ══════════ COLUNAS PRINCIPAIS ══════════ -->
-    <div style="display:flex; flex:1; min-height:0;">
-
-    <!-- ══════════ COLUNA ESQUERDA ══════════ -->
-    <div class="col-left">
-
-      <div class="section h-xs">
-        <div class="cell f-projeto">
-          <div class="cell-label">Projeto</div>
-          <textarea class="cell-input" id="projeto" placeholder="Nome do projeto…" rows="1"></textarea>
-        </div>
-        <div class="cell f-gp">
-          <div class="cell-label">GP</div>
-          <textarea class="cell-input" id="gp" placeholder="Gerente do projeto…" rows="1"></textarea>
-        </div>
-      </div>
-
-      <div class="section h-sm">
-        <div class="cell f-sit-atual">
-          <div class="cell-label">Situação atual</div>
-          <textarea class="cell-input" id="situacao_atual" placeholder="Descreva a situação atual…"></textarea>
-        </div>
-        <div class="cell f-metas">
-          <div class="cell-label">Metas</div>
-          <textarea class="cell-input" id="metas" placeholder="Quais são as metas?…"></textarea>
-        </div>
-        <div class="cell f-sit-futura">
-          <div class="cell-label">Situação futura</div>
-          <textarea class="cell-input" id="situacao_futura" placeholder="Descreva a situação desejada…"></textarea>
-        </div>
-      </div>
-
-      <div class="section h-xs">
-        <div class="cell f-produtos" style="justify-content:space-between;">
-          <div class="cell-label">Produtos do Projeto</div>
-          <textarea class="cell-input" id="produtos" placeholder="Produtos…"></textarea>
-          <div class="arrow">↑</div>
-        </div>
-      </div>
-
-      <!-- Premissas / Restrições / Exclusões — cabeçalho -->
-      <div class="section h-xs">
-        <div class="cell f-premissas"><div class="cell-label">Premissas</div></div>
-        <div class="cell f-restricoes"><div class="cell-label">Restrições</div></div>
-        <div class="cell f-exclusoes"><div class="cell-label">Exclusões</div></div>
-      </div>
-
-      <!-- Premissas / Restrições / Exclusões — corpo -->
-      <div class="section-grow">
-        <div class="cell f-premissas">
-          <textarea class="cell-input" id="premissas" placeholder="Liste as premissas do projeto…"></textarea>
-        </div>
-        <div class="cell f-restricoes">
-          <textarea class="cell-input" id="restricoes" placeholder="Liste as restrições…"></textarea>
-        </div>
-        <div class="cell f-exclusoes">
-          <textarea class="cell-input" id="exclusoes" placeholder="O que está fora do escopo?…"></textarea>
-        </div>
-      </div>
-
-      <div class="section h-sm" style="border-bottom:none;">
-        <div class="cell f-stakeholders">
-          <div class="cell-label italic">Stakeholders, Interesses e Requisitos</div>
-          <textarea class="cell-input" id="stakeholders" placeholder="Liste os stakeholders e seus interesses…"></textarea>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ══════════ COLUNA DIREITA ══════════ -->
-    <div class="col-right">
-
-      <div class="section h-xs">
-        <div class="cell f-aprovacoes">
-          <div class="cell-label">Aprovações/Data</div>
-          <textarea class="cell-input" id="aprovacoes" placeholder="Aprovações e datas…" rows="1"></textarea>
-        </div>
-      </div>
-
-      <div class="section h-sm">
-        <div class="cell f-riscos">
-          <div class="cell-label">Riscos</div>
-          <textarea class="cell-input" id="riscos" placeholder="Liste os riscos identificados…"></textarea>
-        </div>
-      </div>
-
-      <div class="section h-xs">
-        <div class="cell f-entregas"><div class="cell-label">Entregas</div></div>
-        <div class="cell f-responsaveis"><div class="cell-label">Responsáveis</div></div>
-        <div class="cell f-plano"><div class="cell-label">Plano</div></div>
-      </div>
-
-      <div class="section-grow">
-        <div class="cell f-entregas">
-          <textarea class="cell-input" id="entregas" placeholder="Descreva as entregas…"></textarea>
-        </div>
-        <div class="cell f-responsaveis">
-          <textarea class="cell-input" id="responsaveis" placeholder="Nomes e funções…"></textarea>
-        </div>
-        <div class="cell f-plano">
-          <textarea class="cell-input" id="plano" placeholder="Cronograma e ações…"></textarea>
-        </div>
-      </div>
-
-      <div class="section h-md">
-        <div class="sub-stack">
-          <div class="sub-row">
-            <div class="cell f-metricas">
-              <div class="cell-label">Métricas de Desempenho</div>
-              <textarea class="cell-input" id="metricas" placeholder="KPIs e indicadores…"></textarea>
-            </div>
-            <div class="cell f-custo">
-              <div class="cell-label">Custo</div>
-              <textarea class="cell-input" id="custo" placeholder="Orçamento…"></textarea>
-            </div>
-          </div>
-          <div class="sub-row">
-            <div class="cell f-acomp" style="border-right:none;">
-              <div class="cell-label">Acompanhamento</div>
-              <textarea class="cell-input" id="acompanhamento" placeholder="Como será feito o acompanhamento?…"></textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    </div><!-- end colunas principais -->
-  </div>
-  <div class="footer">
-    <span>Desenvolvido por Alessandro Sued Muniz</span>
-    <span class="sep">|</span>
-    <span>Versão: 1.0</span>
-  </div>
-</div>
-
-<!-- IMPORT MODAL -->
-<div class="modal-overlay" id="import-modal">
-  <div class="modal">
-    <h2>Importar projeto (TXT)</h2>
-    <textarea id="import-textarea" placeholder="Cole aqui o conteúdo do arquivo TXT exportado anteriormente…"></textarea>
-    <div class="modal-footer">
-      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-ok" onclick="doImport()">Importar</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-<input type="file" id="file-input" accept=".txt" style="display:none" onchange="readFile(event)">
+<!-- toast de feedback -->
+<div id="toast"></div>
 
 <script>
-  const FIELDS = [
-    'grupo','materia','professor',
-    'projeto','gp','aprovacoes',
-    'situacao_atual','metas','situacao_futura','riscos',
-    'produtos','premissas','entregas','responsaveis','plano',
-    'restricoes','exclusoes','metricas','custo','acompanhamento',
-    'stakeholders'
-  ];
-  const LABELS = {
-    grupo:'Grupo', materia:'Matéria', professor:'Professor',
-    projeto:'Projeto', gp:'GP', aprovacoes:'Aprovações/Data',
-    situacao_atual:'Situação atual', metas:'Metas', situacao_futura:'Situação futura',
-    riscos:'Riscos', produtos:'Produtos do Projeto', premissas:'Premissas',
-    entregas:'Entregas', responsaveis:'Responsáveis', plano:'Plano',
-    restricoes:'Restrições', exclusoes:'Exclusões', metricas:'Métricas de Desempenho',
-    custo:'Custo', acompanhamento:'Acompanhamento',
-    stakeholders:'Stakeholders, Interesses e Requisitos'
-  };
+const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DF=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const CL={work:'Trabalho',personal:'Pessoal',health:'Saúde',other:'Outro'};
 
-  // ── THEME TOGGLE ──
-  function toggleTheme() {
-    const html = document.documentElement;
-    const isDark = html.getAttribute('data-theme') === 'dark';
-    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('toggle-icon').textContent = isDark ? '🌙' : '☀️';
-    localStorage.setItem('a3-theme', isDark ? 'light' : 'dark');
-  }
+let today=new Date();
+let cur={y:today.getFullYear(),m:today.getMonth()};
+let sel={y:today.getFullYear(),m:today.getMonth(),d:today.getDate()};
+let events=[];
 
-  // restore saved theme
-  const saved = localStorage.getItem('a3-theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-    document.getElementById('toggle-icon').textContent = saved === 'dark' ? '☀️' : '🌙';
-  }
+/* ── chave única por arquivo ── */
+const STORAGE_KEY='agenda::'+decodeURIComponent(location.pathname.split('/').pop().replace(/\.html?$/i,'')).trim();
+try{events=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){}
+let dark=false;
 
-  // auto-resize
-  function autoResize(el) {
-    el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 'px';
-  }
-  document.querySelectorAll('.cell-input').forEach(el => {
-    el.addEventListener('input', () => autoResize(el));
-    // initialize height on load
-    if (el.value) autoResize(el);
+/* ── persistência ── */
+function saveLS(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(events));return true}
+  catch(e){return false}
+}
+function dk(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
+function evFor(y,m,d){return events.filter(e=>e.date===dk(y,m,d))}
+
+/* ── toast ── */
+let toastTimer=null;
+function toast(msg,ok=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=ok?'var(--toast-bg)':'#732002';
+  t.style.color=ok?'var(--toast-t)':'#fff';
+  t.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ── tema ── */
+function applyTheme(){
+  dark?document.body.classList.add('dark'):document.body.classList.remove('dark');
+  document.getElementById('tlbl').textContent=dark?'Noite':'Dia';
+  document.querySelector('.tk').style.left=dark?'22px':'3px';
+}
+document.getElementById('tog').onclick=()=>{dark=!dark;applyTheme()};
+
+/* ── exportar TXT ── */
+function exportTxt(){
+  if(!events.length){toast('Nenhum compromisso para exportar.',false);return}
+  const sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date)||(a.start||'').localeCompare(b.start||''));
+  let txt='AGENDA DE COMPROMISSOS\n';
+  txt+='Exportado em: '+new Date().toLocaleString('pt-BR')+'\n';
+  txt+='='.repeat(40)+'\n\n';
+  let lastDate='';
+  sorted.forEach(e=>{
+    if(e.date!==lastDate){
+      const [y,m,d]=e.date.split('-');
+      const dt=new Date(+y,+m-1,+d);
+      txt+=`\n📅 ${DF[dt.getDay()]}, ${+d} de ${MONTHS[+m-1]} de ${y}\n`;
+      txt+='-'.repeat(36)+'\n';
+      lastDate=e.date;
+    }
+    txt+=`  • ${e.title}\n`;
+    if(e.start) txt+=`    Horário: ${e.start}${e.end?' – '+e.end:''}\n`;
+    txt+=`    Categoria: ${CL[e.cat]||e.cat}\n`;
+    if(e.notes) txt+=`    Obs: ${e.notes}\n`;
   });
+  txt+='\n'+'='.repeat(40)+'\n';
+  txt+=`Total: ${events.length} compromisso(s)\n`;
+  const suggestedName=decodeURIComponent(location.pathname.split('/').pop()||'agenda_compromissos.html').replace(/\.html?$/i,'.txt');
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=suggestedName;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Exportado como: '+suggestedName);
+}
 
-  // ── EXPORT TXT ──
-  function exportTXT() {
-    let lines = ['=== MODELO A3 — GESTÃO DE PROJETOS ===',''];
-    FIELDS.forEach(id => {
-      lines.push(`[${LABELS[id]}]`);
-      lines.push(document.getElementById(id)?.value.trim() || '');
-      lines.push('');
+/* ── importar TXT ── */
+function importTxt(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const txt=e.target.result;
+    const lines=txt.split('\n');
+    const imported=[];
+    let currentDate='';
+    let i=0;
+    while(i<lines.length){
+      const line=lines[i].trim();
+      // detecta linha de data: "📅 Dia, D de Mês de AAAA"
+      const dateMatch=line.match(/(\d{1,2}) de (\w+) de (\d{4})/);
+      if(dateMatch){
+        const d=dateMatch[1].padStart(2,'0');
+        const mName=dateMatch[2];
+        const y=dateMatch[3];
+        const mIdx=MONTHS.indexOf(mName);
+        if(mIdx>=0) currentDate=`${y}-${String(mIdx+1).padStart(2,'0')}-${d}`;
+      }
+      // detecta evento: "  • Título"
+      if(line.startsWith('•')&&currentDate){
+        const title=line.replace(/^•\s*/,'').trim();
+        if(title){
+          const ev={id:Date.now()+imported.length,title,date:currentDate,start:'',end:'',cat:'other',notes:''};
+          // horário
+          if(i+1<lines.length){
+            const hm=lines[i+1].match(/Horário:\s*(\d{2}:\d{2})(?:\s*–\s*(\d{2}:\d{2}))?/);
+            if(hm){ev.start=hm[1];if(hm[2])ev.end=hm[2];i++;}
+          }
+          // categoria
+          if(i+1<lines.length){
+            const cm=lines[i+1].match(/Categoria:\s*(.+)/);
+            if(cm){
+              const catMap={'Trabalho':'work','Pessoal':'personal','Saúde':'health','Outro':'other'};
+              ev.cat=catMap[cm[1].trim()]||'other';i++;
+            }
+          }
+          // obs
+          if(i+1<lines.length){
+            const om=lines[i+1].match(/Obs:\s*(.+)/);
+            if(om){ev.notes=om[1].trim();i++;}
+          }
+          imported.push(ev);
+        }
+      }
+      i++;
+    }
+    if(!imported.length){toast('Nenhum compromisso encontrado no arquivo.',false);return}
+    // merge: evita duplicatas por título+data+hora
+    let added=0;
+    imported.forEach(imp=>{
+      const dup=events.find(ex=>ex.title===imp.title&&ex.date===imp.date&&ex.start===imp.start);
+      if(!dup){events.push(imp);added++;}
     });
-    const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href=url; a.download='projeto_a3.txt'; a.click();
-    URL.revokeObjectURL(url);
-    showToast('✓ Arquivo TXT exportado com sucesso');
+    saveLS();
+    renderCal();renderUpcoming();
+    toast(`${added} compromisso(s) importado(s) com sucesso!`);
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+document.getElementById('btn-import-trigger').onclick=()=>document.getElementById('file-input').click();
+document.getElementById('file-input').onchange=e=>{
+  const f=e.target.files[0];
+  if(f) importTxt(f);
+  e.target.value='';
+};
+
+/* ── salvar manualmente ── */
+document.getElementById('btn-save-ls').onclick=()=>{
+  const ok=saveLS();
+  toast(ok?`${events.length} compromisso(s) salvo(s) com sucesso!`:'Erro ao salvar. Armazenamento pode estar cheio.',ok);
+};
+
+/* ── exportar ── */
+document.getElementById('btn-export').onclick=exportTxt;
+
+/* ── calendário ── */
+function renderCal(){
+  document.getElementById('mlbl').textContent=`${MONTHS[cur.m]} ${cur.y}`;
+  const cal=document.getElementById('cal');
+  cal.innerHTML=DS.map(d=>`<div class="ch">${d}</div>`).join('');
+  const first=new Date(cur.y,cur.m,1).getDay();
+  const dim=new Date(cur.y,cur.m+1,0).getDate();
+  const pd=new Date(cur.y,cur.m,0).getDate();
+  let cells=[];
+  for(let i=first-1;i>=0;i--) cells.push({d:pd-i,m:cur.m===0?11:cur.m-1,y:cur.m===0?cur.y-1:cur.y,o:true});
+  for(let d=1;d<=dim;d++) cells.push({d,m:cur.m,y:cur.y,o:false});
+  let rem=42-cells.length;
+  for(let d=1;d<=rem;d++) cells.push({d,m:cur.m===11?0:cur.m+1,y:cur.m===11?cur.y+1:cur.y,o:true});
+  cells.forEach(c=>{
+    const ev=evFor(c.y,c.m,c.d);
+    const iT=!c.o&&c.y===today.getFullYear()&&c.m===today.getMonth()&&c.d===today.getDate();
+    const iS=!c.o&&c.y===sel.y&&c.m===sel.m&&c.d===sel.d;
+    const cell=document.createElement('div');
+    cell.className='cc'+(c.o?' om':'')+(iT?' it':'')+(iS?' sl':'');
+    const vis=ev.slice(0,2);
+    const more=ev.length>2?`<div class="cm">+${ev.length-2} mais</div>`:'';
+    cell.innerHTML=`<div class="dn">${c.d}</div><div class="ces">${vis.map(e=>`<div class="ce ${e.cat}" title="${e.title}">${e.start?e.start+' ':''}${e.title}</div>`).join('')}${more}</div>`;
+    if(!c.o) cell.onclick=()=>{sel={y:c.y,m:c.m,d:c.d};renderCal();renderUpcoming()};
+    cal.appendChild(cell);
+  });
+}
+
+/* ── compromissos do dia selecionado até o fim do mês ── */
+function renderUpcoming(){
+  const up=document.getElementById('upcoming');
+  const lastDay=new Date(sel.y,sel.m+1,0).getDate();
+  let html='';let hasAny=false;
+  for(let d=sel.d;d<=lastDay;d++){
+    const evs=evFor(sel.y,sel.m,d).sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+    if(d>sel.d&&evs.length===0) continue;
+    hasAny=true;
+    const iT=sel.y===today.getFullYear()&&sel.m===today.getMonth()&&d===today.getDate();
+    const iS=d===sel.d;
+    const dow=new Date(sel.y,sel.m,d).getDay();
+    const dayName=iT?'Hoje':DF[dow];
+    const dateFmt=`${d} de ${MONTHS[sel.m]}${sel.y!==today.getFullYear()?' de '+sel.y:''}`;
+    const badge=iT?'<span class="up-badge">Hoje</span>':iS?'<span class="up-badge">Selecionado</span>':'';
+    const evHtml=evs.length===0
+      ?`<div class="noev">Sem compromissos neste dia</div>`
+      :evs.map(e=>`<div class="ecard"><div class="estr ${e.cat}"></div><div class="ebody"><div><div class="etitle">${e.title}</div><div class="emeta">${e.start?`<span>${e.start}${e.end?' – '+e.end:''}</span>`:''}<span class="etag ${e.cat}">${CL[e.cat]}</span></div>${e.notes?`<div class="enotes">${e.notes}</div>`:''}</div><div class="eactions"><button class="eedit" data-id="${e.id}" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg></button><button class="edel" data-id="${e.id}" title="Excluir">×</button></div></div></div>`).join('');
+    html+=`<div class="up-blk"><div class="up-hdr"><span class="up-dn">${dayName}</span><span class="up-ds">${dateFmt}</span>${badge}</div>${evHtml}</div>`;
   }
+  if(!hasAny) html=`<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px 0">Nenhum compromisso de ${sel.d} de ${MONTHS[sel.m]} até o fim do mês</div>`;
+  up.innerHTML=html;
+  up.querySelectorAll('.edel').forEach(b=>{
+    b.onclick=()=>{events=events.filter(e=>String(e.id)!==String(b.dataset.id));saveLS();renderCal();renderUpcoming();toast('Compromisso removido.')};
+  });
+  up.querySelectorAll('.eedit').forEach(b=>{
+    b.onclick=()=>{const ev=events.find(e=>String(e.id)===String(b.dataset.id));if(ev)openModal(ev)};
+  });
+}
 
-  // ── IMPORT TXT ──
-  function importTXT() { document.getElementById('file-input').click(); }
-
-  function readFile(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      document.getElementById('import-textarea').value = ev.target.result;
-      document.getElementById('import-modal').classList.add('open');
-    };
-    reader.readAsText(file,'utf-8'); e.target.value='';
+/* ── modal ── */
+function openModal(ev){
+  const isEdit=!!ev;
+  document.getElementById('modal-title').textContent=isEdit?'Editar compromisso':'Novo compromisso';
+  document.getElementById('btn-save').textContent=isEdit?'Atualizar':'Salvar';
+  document.getElementById('f-id').value=isEdit?ev.id:'';
+  if(isEdit){
+    document.getElementById('f-date').value=ev.date;
+    document.getElementById('f-title').value=ev.title;
+    document.getElementById('f-start').value=ev.start||'';
+    document.getElementById('f-end').value=ev.end||'';
+    document.getElementById('f-cat').value=ev.cat||'work';
+    document.getElementById('f-notes').value=ev.notes||'';
+  } else {
+    const d=String(sel.d).padStart(2,'0'),m=String(sel.m+1).padStart(2,'0');
+    document.getElementById('f-date').value=`${sel.y}-${m}-${d}`;
+    ['f-title','f-start','f-end','f-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-cat').value='work';
   }
-
-  function doImport() {
-    const text = document.getElementById('import-textarea').value;
-    try {
-      FIELDS.forEach(id => {
-        const label = LABELS[id].replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-        const m = text.match(new RegExp(`\\[${label}\\]\\n([\\s\\S]*?)(?=\\n\\[|$)`));
-        if (m && document.getElementById(id)) document.getElementById(id).value = m[1].trim();
-      });
-      closeModal(); showToast('✓ Projeto importado com sucesso');
-    } catch(e) { showToast('✗ Erro ao importar arquivo'); }
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>document.getElementById('f-title').focus(),50);
+}
+document.getElementById('btn-new').onclick=()=>openModal();
+document.getElementById('btn-cancel').onclick=()=>document.getElementById('modal').style.display='none';
+const modalEl=document.getElementById('modal');
+let mouseDownOnOverlay=false;
+modalEl.addEventListener('mousedown',e=>{mouseDownOnOverlay=e.target===modalEl});
+modalEl.addEventListener('mouseup',e=>{if(mouseDownOnOverlay&&e.target===modalEl)modalEl.style.display='none';mouseDownOnOverlay=false});
+document.getElementById('prev').onclick=()=>{cur.m--;if(cur.m<0){cur.m=11;cur.y--}renderCal()};
+document.getElementById('next').onclick=()=>{cur.m++;if(cur.m>11){cur.m=0;cur.y++}renderCal()};
+document.getElementById('btn-save').onclick=()=>{
+  const title=document.getElementById('f-title').value.trim();
+  if(!title)return;
+  const editId=document.getElementById('f-id').value;
+  const data={title,date:document.getElementById('f-date').value,start:document.getElementById('f-start').value,end:document.getElementById('f-end').value,cat:document.getElementById('f-cat').value,notes:document.getElementById('f-notes').value.trim()};
+  if(editId){
+    const idx=events.findIndex(e=>String(e.id)===String(editId));
+    if(idx>=0) events[idx]={...events[idx],...data};
+    toast('Compromisso atualizado!');
+  } else {
+    events.push({id:Date.now(),...data});
+    toast('Compromisso salvo!');
   }
+  saveLS();
+  document.getElementById('modal').style.display='none';
+  const p=data.date.split('-');
+  sel={y:+p[0],m:+p[1]-1,d:+p[2]};cur={y:sel.y,m:sel.m};
+  renderCal();renderUpcoming();
+};
 
-  function closeModal() {
-    document.getElementById('import-modal').classList.remove('open');
-    document.getElementById('import-textarea').value='';
-  }
-  document.getElementById('import-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
-
-  // ── CLEAR ──
-  function clearAll() {
-    if (!confirm('Deseja limpar todos os campos?')) return;
-    FIELDS.forEach(id => { const el=document.getElementById(id); if(el){el.value='';el.style.height='auto';} });
-    showToast('Campos limpos');
-  }
-
-  // ── EXPORT PDF ──
-  function exportPDF(format) {
-    showToast('Gerando PDF…');
-    const board = document.getElementById('a3-board');
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-    // Step 1: Replace every textarea with a div proxy showing full content
-    const textareas = Array.from(board.querySelectorAll('.cell-input'));
-    const savedData = textareas.map(ta => ({
-      el: ta,
-      placeholder: ta.getAttribute('placeholder'),
-      value: ta.value,
-      parent: ta.parentNode,
-      next: ta.nextSibling
-    }));
-
-    savedData.forEach(({ el, value, parent, next }) => {
-      const proxy = document.createElement('div');
-      proxy.className = 'cell-input cell-input-proxy';
-      // Copy computed inline color vars from parent cell
-      const parentStyle = window.getComputedStyle(el);
-      proxy.style.cssText = el.style.cssText;
-      proxy.textContent = value || '';
-      parent.insertBefore(proxy, next);
-      el.style.display = 'none';
-    });
-
-    // Step 2: Capture full scrollHeight of board
-    const fullHeight = board.scrollHeight;
-    const fullWidth  = board.scrollWidth;
-
-    html2canvas(board, {
-      scale: 3,
-      useCORS: true,
-      backgroundColor: isDark ? '#221410' : '#fdf8f2',
-      width:  fullWidth,
-      height: fullHeight,
-      windowWidth:  fullWidth,
-      windowHeight: fullHeight,
-      scrollX: 0,
-      scrollY: 0,
-      logging: false
-    }).then(canvas => {
-
-      // Step 3: Remove proxies, restore textareas
-      savedData.forEach(({ el, placeholder }) => {
-        el.style.display = '';
-        el.setAttribute('placeholder', placeholder || '');
-        const proxy = el.parentNode.querySelector('.cell-input-proxy');
-        if (proxy) proxy.remove();
-      });
-
-      // Step 4: Build PDF with header, content and footer
-      const { jsPDF } = window.jspdf;
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-
-      const isA4    = (format === 'a4');
-      const pdfW    = isA4 ? 297 : 420;   // landscape: A4=297×210, A3=420×297
-      const pdfH    = isA4 ? 210 : 297;
-      const fmt     = isA4 ? 'a4' : 'a3';
-      const margin  = 6;                   // mm side margin
-      const hdrH    = 8;                   // mm header height
-      const ftrH    = 8;                   // mm footer height
-      const contentY = margin + hdrH + 2;
-      const contentH = pdfH - contentY - ftrH - margin;
-      const contentW = pdfW - margin * 2;
-
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: fmt });
-
-      // ── HEADER ──
-      pdf.setFillColor(46, 26, 22);        // espresso dark
-      pdf.rect(margin, margin, contentW, hdrH, 'F');
-      pdf.setFontSize(isA4 ? 9 : 11);
-      pdf.setTextColor(242, 223, 192);     // cream text
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Modelo A3', pdfW / 2, margin + hdrH / 2 + 1.5, { align: 'center' });
-
-      // ── CONTENT (board screenshot) ──
-      pdf.addImage(imgData, 'JPEG', margin, contentY, contentW, contentH);
-
-      // ── FOOTER ──
-      const ftrY = pdfH - margin - ftrH;
-      pdf.setFillColor(46, 26, 22);
-      pdf.rect(margin, ftrY, contentW, ftrH, 'F');
-      pdf.setFontSize(isA4 ? 7 : 8);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(207, 178, 140);     // latte text
-      pdf.text('Desenvolvido por Alessandro Sued Muniz', margin + 4, ftrY + ftrH / 2 + 1.5);
-      pdf.text('Versão: 1.0', pdfW - margin - 4, ftrY + ftrH / 2 + 1.5, { align: 'right' });
-
-      pdf.save('projeto_a3_' + fmt + '.pdf');
-      showToast('✓ PDF ' + fmt.toUpperCase() + ' exportado com sucesso');
-    });
-  }
-
-  // ── TOAST ──
-  function showToast(msg) {
-    const t=document.getElementById('toast');
-    t.textContent=msg; t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'),2800);
-  }
+const _fn=decodeURIComponent(location.pathname.split('/').pop()||'agenda_tema_dia_noite.html');
+const _fi=document.getElementById('file-id');
+if(_fi){_fi.textContent='📄 '+_fn;_fi.title='Armazenamento: '+STORAGE_KEY;}
+renderCal();renderUpcoming();
 </script>
 </body>
 </html>
